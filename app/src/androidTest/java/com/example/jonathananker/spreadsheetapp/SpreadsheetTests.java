@@ -21,21 +21,21 @@ public class SpreadsheetTests {
 
     @Test
     public void addSaveLoad() throws Exception {
-        spreadsheetController = new SpreadsheetController(1, 1);
+        spreadsheetController = new SpreadsheetController(2, 2);
         spreadsheetController.addColumn();
-        assertEquals(2, spreadsheetController.getNumberOfColumns());
-        spreadsheetController.setEditXAndY(1, 0);
+        assertEquals(3, spreadsheetController.getNumberOfColumns());
+        spreadsheetController.setEditXAndY(2, 1);
         spreadsheetController.setCell("test");
-        assertEquals("test", spreadsheetController.getCell(1, 0));
+        assertEquals("test", spreadsheetController.getCell(2, 1));
         String save = spreadsheetController.save();
         spreadsheetController.load(save);
-        assertEquals("test", spreadsheetController.getCell(1, 0));
+        assertEquals("test", spreadsheetController.getCell(2, 1));
     }
 
     @Test
     public void loadTestString() throws Exception {
-        spreadsheetController = new SpreadsheetController(1, 1);
-        spreadsheetController.load("[[,,][,test,]]");
+        spreadsheetController = new SpreadsheetController(2, 2);
+        spreadsheetController.load("[[,A,B,C][1,test,,][2,,,]]");
         assertEquals("test", spreadsheetController.getCell(1, 1));
     }
 
@@ -50,8 +50,5 @@ public class SpreadsheetTests {
         spreadsheetController.setCell("test2");
         spreadsheetController.undoLastChange();
         assertEquals("test", spreadsheetController.getCell(2, 2));
-
     }
-
-
 }

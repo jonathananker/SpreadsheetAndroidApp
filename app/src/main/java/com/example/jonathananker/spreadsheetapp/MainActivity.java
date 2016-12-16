@@ -13,6 +13,7 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -25,6 +26,7 @@ import android.widget.TableRow;
 import android.widget.TextView;
 
 import static android.content.ContentValues.TAG;
+import static com.example.jonathananker.spreadsheetapp.R.id.editText;
 import static com.example.jonathananker.spreadsheetapp.R.id.fab;
 import static com.example.jonathananker.spreadsheetapp.R.string.columns;
 
@@ -66,7 +68,7 @@ public class MainActivity extends AppCompatActivity
         });
 
         table = (TableLayout) findViewById(R.id.spreadsheet);
-        editor = (EditText) findViewById(R.id.editText);
+        editor = (EditText) findViewById(editText);
         editor.setOnKeyListener(new View.OnKeyListener() {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 // If the event is a key-down event on the "enter" button
@@ -106,7 +108,7 @@ public class MainActivity extends AppCompatActivity
         });
 
 
-        spreadsheetController = new SpreadsheetController(1, 1);
+        spreadsheetController = new SpreadsheetController(2, 2);
         load();
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -199,24 +201,35 @@ public class MainActivity extends AppCompatActivity
      */
     private TextView newCell(final int valueX, final int valueY) {
         TextView textview = new TextView(getApplicationContext());
-        textview.setText("");
         textview.setTextColor(Color.BLACK);
         textview.setBackgroundResource(R.drawable.cell_shape);
         textview.setMinHeight(100);
         textview.setMinWidth(100);
         textview.setPadding(10, 10, 10, 10);
-        textview.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                //on cell click sets the coordinates of the current cell to the edit values and gives focus to the edittext
-                hasTouchedCell = true; //user has touched cell, allowing editor to set a value
+        textview.setGravity(Gravity.CENTER);
+        if (valueX == 0 || valueY == 0 ) {
+            textview.setText(spreadsheetController.setHeaderCell(valueX, valueY));
+            textview.setBackgroundResource(R.drawable.cell_header_shape);
+            textview.setTextColor(Color.WHITE);
+        }
+        else {
+            textview.setBackgroundResource(R.drawable.cell_shape);
+            textview.setText("");
+            textview.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    //on cell click sets the coordinates of the current cell to the edit values and gives focus to the edittext
+                    hasTouchedCell = true; //user has touched cell, allowing editor to set a value
 //                Snackbar.make(v, " " + valueX + " " + valueY + " ", Snackbar.LENGTH_LONG)
 //                        .setAction("Action", null).show();
-                spreadsheetController.setEditXAndY(valueX, valueY);
-                editor.setText(spreadsheetController.getCell(valueX, valueY));
-                editor.setSelection(editor.getText().length());
-                editor.requestFocus();
-            }
-        });
+                    spreadsheetController.setEditXAndY(valueX, valueY);
+                    editor.setText(spreadsheetController.getCell(valueX, valueY));
+                    editor.setSelection(editor.getText().length());
+                    editor.requestFocus();
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.toggleSoftInput(InputMethodManager.SHOW_FORCED,0);
+                }
+            });
+        }
         return textview;
     }
 
@@ -242,9 +255,11 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_new) {
-            spreadsheetController = new SpreadsheetController(1, 1);
-            startTableView(1, 1);
+            hasTouchedCell = false;
+            spreadsheetController = new SpreadsheetController(2, 2);
+            startTableView(2, 2);
         } else if (id == R.id.nav_clear) {
+            hasTouchedCell = false;
             spreadsheetController = new SpreadsheetController(spreadsheetController.getNumberOfColumns(), spreadsheetController.getNumberOfRows());
             startTableView(spreadsheetController.getNumberOfColumns(), spreadsheetController.getNumberOfRows());
         } else if (id == R.id.nav_save) {
@@ -272,14 +287,14 @@ public class MainActivity extends AppCompatActivity
         if (data != null)
         {
             spreadsheetController.load(data);
-            int rows = sharedPref.getInt(getString(R.string.rows), 1);
-            int columns = sharedPref.getInt(getString(R.string.columns), 1);
+            int rows = sharedPref.getInt(getString(R.string.rows), 2);
+            int columns = sharedPref.getInt(getString(R.string.columns), 2);
             startTableView(columns, rows);
             Log.i(TAG, "loaded data: " + data);
         }
         else
         {
-            startTableView(1, 1);
+            startTableView(2, 2);
         }
     }
 
@@ -295,7 +310,19 @@ public class MainActivity extends AppCompatActivity
             }
             table.addView(tr, new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableLayout.LayoutParams.WRAP_CONTENT));
         }
-
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        savedInstanceState.putString("data", spreadsheetController.save());
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        String data = savedInstanceState.getString("data");
+        spreadsheetController.load(data);
+        startTableView(spreadsheetController.getNumberOfColumns(), spreadsheetController.getNumberOfRows());
+    }
 }

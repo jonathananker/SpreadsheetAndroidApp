@@ -10,7 +10,7 @@ import java.util.Stack;
 public class SpreadsheetController {
     private final SpreadsheetData spreadsheet; //contains spreadsheet data
     private final Stack<CellHistory> history; //Stack holding history of changes
-    private int editX, editY; //edit holds the coordinates of the cell to edit
+    private int editX = 1, editY = 1; //edit holds the coordinates of the cell to edit
 
     public int getEditX() {
         return editX;
@@ -81,5 +81,32 @@ public class SpreadsheetController {
 
     public void load(String data) {
         spreadsheet.loadData(data);
+    }
+
+    public String setHeaderCell(int valueX, int valueY)
+    {
+        String text;
+        if (valueX == valueY) {
+            text = "";
+        }
+        else if (valueY == 0) {
+            text = toAlphabetic(valueX - 1);
+        }
+        else {
+            text = (Integer.toString(valueY));
+        }
+        spreadsheet.setCellData(valueX, valueY, text);
+        return text;
+    }
+
+    public static String toAlphabetic(int i) {
+        int quotient = i/26;
+        int remainder = i%26;
+        char letter = (char)('A' + remainder);
+        if( quotient == 0 ) {
+            return String.valueOf(letter);
+        } else {
+            return toAlphabetic(quotient - 1) + letter;
+        }
     }
 }
