@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">SpreadsheetApp</string>
+    <string name="app_name">Spreadsheet App</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
@@ -8,5 +8,15 @@
     <string name="add_column">Add Column</string>
     <string name="add_row">Add Row</string>
     <string name="tap_on_cell">Tap On Cell</string>
+    <string name="load">Reload</string>
+    <string name="save">Save</string>
+    <string name="clear">Clear</string>
+    <string name="new_sheet">New</string>
+    <string name="data">Data</string>
+    <string name="rows">Rows</string>
+    <string name="columns">Columns</string>
+    <string name="name">Spreadsheet App by Jonathan Anker</string>
+    <string name="email">jonathananker@gmail.com</string>
+
 
 </resources>

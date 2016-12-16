@@ -25,9 +25,9 @@ public class SpreadsheetController {
         return editY;
     }
 
-    public SpreadsheetController(int r, int c)
+    public SpreadsheetController(int c, int r)
     {
-        spreadsheet = new SpreadsheetData(r, c);
+        spreadsheet = new SpreadsheetData(c, r);
         history = new Stack<CellHistory>();
     }
 
@@ -58,7 +58,7 @@ public class SpreadsheetController {
      */
     public boolean setCell(String text)
     {
-       return spreadsheet.setCellData(editX, editY, text);
+        return spreadsheet.setCellData(editX, editY, text);
     }
 
     public boolean isHistoryEmpty() {
@@ -73,5 +73,13 @@ public class SpreadsheetController {
         CellHistory last = history.pop();
         setEditXAndY(last.getValueX(), last.getValueY());
         setCell(last.getOldText());
+    }
+
+    public String save() {
+        return spreadsheet.saveData();
+    }
+
+    public void load(String data) {
+        spreadsheet.loadData(data);
     }
 }

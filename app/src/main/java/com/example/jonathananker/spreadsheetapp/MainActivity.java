@@ -1,6 +1,8 @@
 package com.example.jonathananker.spreadsheetapp;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -10,6 +12,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -21,21 +24,23 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import static android.content.ContentValues.TAG;
 import static com.example.jonathananker.spreadsheetapp.R.id.fab;
+import static com.example.jonathananker.spreadsheetapp.R.string.columns;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    TableLayout table; //holds tablerows of cells (textviews)
+    private TableLayout table; //holds tablerows of cells (textviews)
     /*
     TL:
     TR: TV TV TV
     TR: TV TV TV
     TR: TV TV TV
      */
-    EditText editor;
-    SpreadsheetController spreadsheetController;
-    boolean hasTouchedCell = false;
+    private EditText editor;
+    private SpreadsheetController spreadsheetController;
+    private boolean hasTouchedCell = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,10 +104,10 @@ public class MainActivity extends AppCompatActivity
                 addColumn();
             }
         });
+
+
         spreadsheetController = new SpreadsheetController(1, 1);
-        TableRow tr = new TableRow(getApplicationContext());
-        tr.addView(newCell(0, 0));
-        table.addView(tr, new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableLayout.LayoutParams.WRAP_CONTENT));
+        load();
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -118,7 +123,7 @@ public class MainActivity extends AppCompatActivity
     /**
      * Adds column
      */
-    public void addColumn() {
+    private void addColumn() {
         int columns = spreadsheetController.getNumberOfColumns();
         spreadsheetController.addColumn();
         for (int i = 0, j = table.getChildCount(); i < j; i++) {
@@ -134,7 +139,7 @@ public class MainActivity extends AppCompatActivity
     /**
      * Adds row
      */
-    public void addRow() {
+    private void addRow() {
         //adds a new TableRow
         int rows = spreadsheetController.getNumberOfRows(), columns = spreadsheetController.getNumberOfColumns();
         spreadsheetController.addRow();
@@ -192,9 +197,10 @@ public class MainActivity extends AppCompatActivity
      * @param valueY Y coordinate of cell
      * @return new cell
      */
-    public TextView newCell(final int valueX, final int valueY) {
+    private TextView newCell(final int valueX, final int valueY) {
         TextView textview = new TextView(getApplicationContext());
         textview.setText("");
+        textview.setTextColor(Color.BLACK);
         textview.setBackgroundResource(R.drawable.cell_shape);
         textview.setMinHeight(100);
         textview.setMinWidth(100);
@@ -206,6 +212,8 @@ public class MainActivity extends AppCompatActivity
 //                Snackbar.make(v, " " + valueX + " " + valueY + " ", Snackbar.LENGTH_LONG)
 //                        .setAction("Action", null).show();
                 spreadsheetController.setEditXAndY(valueX, valueY);
+                editor.setText(spreadsheetController.getCell(valueX, valueY));
+                editor.setSelection(editor.getText().length());
                 editor.requestFocus();
             }
         });
@@ -233,23 +241,61 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
+        if (id == R.id.nav_new) {
+            spreadsheetController = new SpreadsheetController(1, 1);
+            startTableView(1, 1);
+        } else if (id == R.id.nav_clear) {
+            spreadsheetController = new SpreadsheetController(spreadsheetController.getNumberOfColumns(), spreadsheetController.getNumberOfRows());
+            startTableView(spreadsheetController.getNumberOfColumns(), spreadsheetController.getNumberOfRows());
+        } else if (id == R.id.nav_save) {
+            String data = spreadsheetController.save();
+            SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+            SharedPreferences.Editor spEditor = sharedPref.edit();
+            spEditor.putString(getString(R.string.data), data);
+            spEditor.putInt(getString(R.string.rows), spreadsheetController.getNumberOfRows());
+            spEditor.putInt(getString(columns), spreadsheetController.getNumberOfColumns());
+            spEditor.apply();
 
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
+        } else if (id == R.id.nav_load) {
+            load();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void load() {
+
+        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+        String data = sharedPref.getString(getString(R.string.data), null);
+        if (data != null)
+        {
+            spreadsheetController.load(data);
+            int rows = sharedPref.getInt(getString(R.string.rows), 1);
+            int columns = sharedPref.getInt(getString(R.string.columns), 1);
+            startTableView(columns, rows);
+            Log.i(TAG, "loaded data: " + data);
+        }
+        else
+        {
+            startTableView(1, 1);
+        }
+    }
+
+    private void startTableView(int c, int r) {
+        table.removeAllViews();
+        for (int i = 0; i < r; i++) {
+            TableRow tr = new TableRow(getApplicationContext());
+            for (int j = 0; j < c; j++)
+            {
+                TextView tv = newCell(j, i);
+                tv.setText(spreadsheetController.getCell(j,i));
+                tr.addView(tv);
+            }
+            table.addView(tr, new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableLayout.LayoutParams.WRAP_CONTENT));
+        }
+
     }
 
 }

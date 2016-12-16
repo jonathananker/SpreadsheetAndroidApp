@@ -1,6 +1,9 @@
 package com.example.jonathananker.spreadsheetapp;
 
+import android.util.Log;
+
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * Created by jonathananker on 12/15/16.
@@ -8,23 +11,25 @@ import java.util.ArrayList;
  */
 
  class SpreadsheetData {
+    private static final String TAG = "SpreadsheetData";
     private int rows; //number of rows
     private int columns; //number of columns
-    private final ArrayList<ArrayList<String>> sheet;
+    private ArrayList<ArrayList<String>> sheet;
+    private final String defaultValue = ""; //default value of an empty cell
     /*
     AL:
         AL: String, String, String
         AL: String, String, String
         AL: String, String, String
      */
-    public SpreadsheetData(int r, int c)
+    public SpreadsheetData(int c, int r)
     {
         sheet = new ArrayList<ArrayList<String>>();
         for (int i = 0; i < r; i++) {
             sheet.add(new ArrayList<String>());
             for (int j = 0; j < c; j++)
             {
-                sheet.get(i).add("");
+                sheet.get(i).add(defaultValue);
             }
         }
         rows = r;
@@ -35,7 +40,7 @@ import java.util.ArrayList;
         sheet.add(new ArrayList<String>());
         for (int j = 0; j < columns; j++)
         {
-            sheet.get(rows).add("");
+            sheet.get(rows).add(defaultValue);
         }
         rows++;
     }
@@ -43,7 +48,7 @@ import java.util.ArrayList;
     public void addColumnToData() {
         for (int i = 0; i < rows; i++)
         {
-            sheet.get(i).add("");
+            sheet.get(i).add(defaultValue);
         }
         columns++;
     }
@@ -69,9 +74,9 @@ import java.util.ArrayList;
 
     /**
      *
-     * @param valueX
-     * @param valueY
-     * @param text
+     * @param valueX X value of cell
+     * @param valueY Y value of cell
+     * @param text text to set in cell
      * @return if successful
      */
     public boolean setCellData(int valueX, int valueY, String text)
@@ -83,5 +88,54 @@ import java.util.ArrayList;
             sheet.get(valueY).set(valueX, text);
             return true;
         }
+    }
+
+    public String saveData() {
+        StringBuilder sb = new StringBuilder();
+        String delim = ""; //no comma before first value
+        sb.append("["); //start of document
+        for (ArrayList<String> row: sheet)
+        {
+            sb.append("["); //start of row
+            for (String data: row)
+            {
+                sb.append(delim).append(data);
+                delim = ","; //comma between values
+            }
+            sb.append("]"); //end row
+            delim = "";
+        }
+        sb.append("]"); //end documnet
+        Log.i(TAG, "saveData: " + sb.toString());
+        return sb.toString();
+    }
+
+    public void loadData(String data) {
+        if (data == null) return;
+        String trim = data.substring(1, data.length() - 1); //removing surrounding []
+        String[] split = trim.split("]");
+        sheet = new ArrayList<ArrayList<String>>();
+        for (String row: split)
+        {
+            if (row.length() > 1)
+                sheet.add(loadRow(row.substring(1))); //load row, removing the front [
+            else
+            {
+                ArrayList<String> list = new ArrayList<String>(); //Row only has a empty cell in it
+                list.add(defaultValue);
+                sheet.add(list);
+            }
+        }
+        rows = sheet.size();
+        if (rows > 0)
+            columns = sheet.get(0).size();
+
+    }
+
+    private ArrayList<String> loadRow(String string) {
+        ArrayList<String> list = new ArrayList<String>();
+        String[] split = string.split(",", -1);
+        Collections.addAll(list, split);
+        return list;
     }
 }
