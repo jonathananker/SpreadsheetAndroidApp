@@ -90,6 +90,10 @@ import java.util.Collections;
         }
     }
 
+    /**
+     * converts sheet to string of data
+     * @return data
+     */
     public String saveData() {
         StringBuilder sb = new StringBuilder();
         String delim = ""; //no comma before first value
@@ -110,6 +114,10 @@ import java.util.Collections;
         return sb.toString();
     }
 
+    /**
+     * convert string of data to the spreadsheet
+     * @param data string of data
+     */
     public void loadData(String data) {
         if (data == null) return;
         String trim = data.substring(1, data.length() - 1); //removing surrounding []

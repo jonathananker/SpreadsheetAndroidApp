@@ -69,6 +69,9 @@ public class SpreadsheetController {
         history.add(new CellHistory(editX, editY, getCell(editX, editY)));
     }
 
+    /**
+     * user presses the undo button and resets last change
+     */
     public void undoLastChange() {
         CellHistory last = history.pop();
         setEditXAndY(last.getValueX(), last.getValueY());
@@ -83,6 +86,12 @@ public class SpreadsheetController {
         spreadsheet.loadData(data);
     }
 
+    /**
+     * sets the text of the header cell
+     * @param valueX X
+     * @param valueY Y
+     * @return text to set to ui cell
+     */
     public String setHeaderCell(int valueX, int valueY)
     {
         String text;
@@ -99,6 +108,11 @@ public class SpreadsheetController {
         return text;
     }
 
+    /**
+     * convert header x value to alphabetic header
+     * @param i x - 1
+     * @return
+     */
     public static String toAlphabetic(int i) {
         int quotient = i/26;
         int remainder = i%26;

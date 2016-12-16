@@ -208,6 +208,7 @@ public class MainActivity extends AppCompatActivity
         textview.setPadding(10, 10, 10, 10);
         textview.setGravity(Gravity.CENTER);
         if (valueX == 0 || valueY == 0 ) {
+            //set header cell
             textview.setText(spreadsheetController.setHeaderCell(valueX, valueY));
             textview.setBackgroundResource(R.drawable.cell_header_shape);
             textview.setTextColor(Color.WHITE);
@@ -280,8 +281,10 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
+    /**
+     * load sheet from shared preferences
+     */
     private void load() {
-
         SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
         String data = sharedPref.getString(getString(R.string.data), null);
         if (data != null)
@@ -298,6 +301,11 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * create table ui based on number of columns and rows
+     * @param c columns
+     * @param r rows
+     */
     private void startTableView(int c, int r) {
         table.removeAllViews();
         for (int i = 0; i < r; i++) {
@@ -314,12 +322,14 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
+        //save current sheet in saved instance state
         super.onSaveInstanceState(savedInstanceState);
         savedInstanceState.putString("data", spreadsheetController.save());
     }
 
     @Override
     public void onRestoreInstanceState(Bundle savedInstanceState) {
+        //load current sheet in saved instance state and not shared pref
         super.onRestoreInstanceState(savedInstanceState);
         String data = savedInstanceState.getString("data");
         spreadsheetController.load(data);
