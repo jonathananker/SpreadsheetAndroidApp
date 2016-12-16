@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">SpreadsheetApp</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="add_column">Add Column</string>
+    <string name="add_row">Add Row</string>
+    <string name="tap_on_cell">Tap On Cell</string>
+
+</resources>
